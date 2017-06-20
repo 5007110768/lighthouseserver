@@ -4,8 +4,8 @@ const DataProvider = {};
 
 let database = mysql.createConnection({
     host: '192.168.1.77',
-    user: 'root',
-    password: 'admins',
+    user: 'randy',
+    password: 'test',
     database: 'lighthouse'
 });
 
@@ -19,9 +19,10 @@ database.connect((err) => {
 
 DataProvider.createToken = function(callback) {
     console.log('DataProvider.createToken');
-
-    let token = btoa(new Date().getTime());
-
+    let token = '';
+   /* let token = new Date().getTime();
+    let tokenBuffer = new Buffer(token).toString('base64')
+    console.log(tokenBuffer);*/
     callback(token);
 
 };
@@ -29,19 +30,7 @@ DataProvider.createToken = function(callback) {
 DataProvider.authenticate = function(hash, callback, err) {
     console.log('DataProvider.authenticate', hash);
 
-    let user = {
-        'userId': 1,
-        'firstName': 'Liam',
-        'lastName': 'Neeson',
-        'age': 61,
-        'description': 'I dont know who you are. I dont know what you want',
-        'interests': 'Killing people who hurt his daughter'
-    };
-
-    // TODO: CRUD request and then return token
-    // if hash (emailPassHash) matches database, return user and get a token. Otherwise return an error.
-
-    let query = 'SELECT * FROM user WHERE hash =' + database.escape(hash);
+    let query = 'SELECT userID FROM user WHERE hash =' + database.escape(hash);
 
     database.query(query, (err, result, fields) => {
         if (err) throw err;
@@ -49,6 +38,9 @@ DataProvider.authenticate = function(hash, callback, err) {
         DataProvider.createToken((token) => {
             console.log('Created token: ', token);
             console.log('Result: ', result);
+
+            result = JSON.stringify(result);
+
             callback(result, token);
         });
 
@@ -58,27 +50,13 @@ DataProvider.authenticate = function(hash, callback, err) {
 DataProvider.getProfile = function(userId, callback, err) {
     console.log('DataProvider.getProfile', userId);
 
-    let _response = {
-        'userId': 1,
-        'firstName': 'Liam',
-        'lastName': 'Neeson',
-        'age': 61,
-        'description': 'I dont know who you are. I dont know what you want',
-        'interests': 'Killing people who hurt his daughter',
-        'matches':['Xena', 'Wonder Woman', 'Jessica Jones'],
-        'photos':['image_01.jpg', 'image_02.jpg', 'image_03.jpg'],
-        'partnerPreferences': {
-            'travel': true,
-            'sports': false,
-            'movies': false,
-            'goingOut': true
-        }
-    };
+    let query = 'SELECT * FROM user WHERE userID =' + database.escape(userId);
 
-    // TODO: CRUD request
+    database.query(query, (err, result, fields) => {
+        if (err) throw err;
 
-    if (_response) callback(JSON.stringify(_response));
-    else err('No access for you.');
+        callback(result);
+    });
 };
 
 DataProvider.register = function(data, callback, err) {
