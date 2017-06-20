@@ -1,7 +1,6 @@
 // Dependencies
 const http = require('http');
 const url = require('url');
-const mysql = require('mysql');
 
 const port = process.env.PORT || 3001;
 

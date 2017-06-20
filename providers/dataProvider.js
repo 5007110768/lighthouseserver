@@ -1,5 +1,21 @@
+const mysql = require('mysql');
 const CrudProvider = require('./crudProvider');
 const DataProvider = {};
+
+let database = mysql.createConnection({
+    host: '192.168.1.77',
+    user: 'root',
+    password: 'admins',
+    database: 'lighthouse'
+});
+
+database.connect((err) => {
+    if (err) {
+        console.error('Error while connecting to database: ' + err.stack);
+        return;
+    }
+    console.log('Successfully connected to database as: ', database.threadId);
+});
 
 DataProvider.createToken = function(callback) {
     console.log('DataProvider.createToken');
@@ -25,12 +41,18 @@ DataProvider.authenticate = function(hash, callback, err) {
     // TODO: CRUD request and then return token
     // if hash (emailPassHash) matches database, return user and get a token. Otherwise return an error.
 
+    let query = 'SELECT * FROM user WHERE hash =' + database.escape(hash);
 
-    // If crud request is succss:
-    DataProvider.createToken((token) => {
-        console.log('Created token: ', token);
-        callback(user, token);
-    };
+    database.query(query, (err, result, fields) => {
+        if (err) throw err;
+
+        DataProvider.createToken((token) => {
+            console.log('Created token: ', token);
+            console.log('Result: ', result);
+            callback(result, token);
+        });
+
+    });
 };
 
 DataProvider.getProfile = function(userId, callback, err) {
