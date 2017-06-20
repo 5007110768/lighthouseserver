@@ -1,0 +1,6 @@
+// IDE's
+.idea/*
+
+// Modules
+node_modules/*
+
