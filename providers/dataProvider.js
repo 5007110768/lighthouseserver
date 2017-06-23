@@ -3,10 +3,10 @@ const CrudProvider = require('./crudProvider');
 const DataProvider = {};
 
 let database = mysql.createConnection({
-    host: '192.168.1.77',
-    user: 'randy',
-    password: 'test',
-    database: 'lighthouse'
+    host: 'oege.ie.hva.nl',
+    user: 'jansenj031',
+    password: 'kKy+tS.GzMIP6e',
+    database: 'zjansenj031'
 });
 
 database.connect((err) => {
@@ -30,7 +30,7 @@ DataProvider.createToken = function(callback) {
 DataProvider.authenticate = function(hash, callback, err) {
     console.log('DataProvider.authenticate', hash);
 
-    let query = 'SELECT userID FROM user WHERE hash =' + database.escape(hash);
+    let query = 'SELECT ID FROM user WHERE hash =' + database.escape(hash);
 
     database.query(query, (err, result, fields) => {
         if (err) throw err;
@@ -49,11 +49,13 @@ DataProvider.authenticate = function(hash, callback, err) {
 
 DataProvider.getProfile = function(userId, callback, err) {
     console.log('DataProvider.getProfile', userId);
-
-    let query = 'SELECT * FROM user WHERE userID =' + database.escape(userId);
+    console.log('userId', userId);
+    let query = 'SELECT * FROM user WHERE ID =' + database.escape(userId);
 
     database.query(query, (err, result, fields) => {
         if (err) throw err;
+
+        result = JSON.stringify(result);
 
         callback(result);
     });

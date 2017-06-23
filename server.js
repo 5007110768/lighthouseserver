@@ -17,8 +17,9 @@ let server = http.createServer((req, res) => {
 
            case '/user-profile':
                console.log('User profile');
+               let userId = params['userId'];
 
-               dataProvider.getProfile('',
+               dataProvider.getProfile(userId,
                    (result) => {
                        res.writeHead('200', 'User profile retrieval success');
                        res.end(result);
