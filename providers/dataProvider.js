@@ -32,6 +32,8 @@ DataProvider.authenticate = function(hash, callback, err) {
 
     let query = 'SELECT ID, permissionLvl FROM user WHERE hash =' + database.escape(hash);
 
+    database.query('SELECT * FROM user', (err, result, fields) => { console.log(result); });
+
     database.query(query, (err, result, fields) => {
         if (err) throw err;
 
@@ -64,27 +66,31 @@ DataProvider.getProfile = function(userId, callback, err) {
 DataProvider.register = function(data, callback, err) {
     console.log('DataProvider.register', data.firstName + ' ' + data.lastName);
 
-    let _response = {
-        'userId': 2,
-        'firstName': 'John',
-        'lastName': 'Wick',
-        'age': 53,
-        'description': 'Most badass of all badasses',
-        'interests': 'Killing people who hurt his dog',
-        'matches':['Xena', 'Wonder Woman', 'Jessica Jones'],
-        'photos':[data.photos[0]],
-        'partnerPreferences': {
-            'travel': true,
-            'sports': true,
-            'movies': true,
-            'goingOut': false
-        }
-    };
+    let query = 'INSERT INTO user (firstName, lastName, email, gender, dateOfBirth, description, permissionLvl, hash) ' +
+        'VALUES (' +
+        '"' + data.firstName + '",' +
+        '"' + data.lastName + '",' +
+        '"' + data.email + '",' +
+        '"' + data.gender + '",' +
+        '"' + data.dateOfBirth + '",' +
+        '"' + data.description + '",' +
+        '"' + data.permissionLvl + '",' +
+        '"' + data._hash + '"'
+        + ')';
 
-    // TODO: CRUD request
+    database.query(query, (err, result, fields) => {
+        if (err) throw err;
 
-    if (data) callback(JSON.stringify(_response));
-    else err('Unable to register your account.');
+        DataProvider.createToken((token) => {
+            console.log('Created token: ', token);
+            console.log('Result: ', result);
+
+            let response = {'data': result, '_token': token};
+
+            callback(JSON.stringify(response));
+        });
+    });
+
 };
 
 module.exports = DataProvider;

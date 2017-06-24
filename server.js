@@ -73,7 +73,7 @@ let server = http.createServer((req, res) => {
                     console.log('data', _data);
                     dataProvider.register(_data,
                         (result) => {
-                            res.writeHead(200, 'Account successfully created', {'x-data-token': 'thisIsAPlaceholderToken'});
+                            res.writeHead(200, 'Account successfully created');
                             res.end(result);
                         },
                         (err) => {
