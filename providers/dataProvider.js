@@ -19,10 +19,10 @@ database.connect((err) => {
 
 DataProvider.createToken = function(callback) {
     console.log('DataProvider.createToken');
-    let token = '';
-   /* let token = new Date().getTime();
-    let tokenBuffer = new Buffer(token).toString('base64')
-    console.log(tokenBuffer);*/
+
+    let token = new Date().getTime().toString();
+    token = new Buffer(token).toString('base64');
+
     callback(token);
 
 };
@@ -30,7 +30,7 @@ DataProvider.createToken = function(callback) {
 DataProvider.authenticate = function(hash, callback, err) {
     console.log('DataProvider.authenticate', hash);
 
-    let query = 'SELECT ID FROM user WHERE hash =' + database.escape(hash);
+    let query = 'SELECT ID, permissionLvl FROM user WHERE hash =' + database.escape(hash);
 
     database.query(query, (err, result, fields) => {
         if (err) throw err;
@@ -39,9 +39,9 @@ DataProvider.authenticate = function(hash, callback, err) {
             console.log('Created token: ', token);
             console.log('Result: ', result);
 
-            result = JSON.stringify(result);
+            let response = {'data': result, '_token': token};
 
-            callback(result, token);
+            callback(JSON.stringify(response));
         });
 
     });

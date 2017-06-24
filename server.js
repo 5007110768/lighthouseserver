@@ -48,9 +48,9 @@ let server = http.createServer((req, res) => {
                     _hash = _hash.toString();
                     console.log(_hash);
                     dataProvider.authenticate(_hash,
-                        (data, token) => {
-                            res.writeHead(200, 'Access granted', {'x-data-token': token});
-                            res.end(data);
+                        (result) => {
+                            res.writeHead(200, 'Access granted');
+                            res.end(result);
                         },
                         (err) => {
                             console.error('Error:', err);
