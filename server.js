@@ -13,11 +13,12 @@ let server = http.createServer((req, res) => {
 
     if (req.method == 'GET') {
         console.log(path);
-       switch(path) {
 
+        let userId = params['userId'];
+
+        switch(path) {
            case '/user-profile':
                console.log('User profile');
-               let userId = params['userId'];
 
                dataProvider.getProfile(userId,
                    (result) => {
@@ -31,23 +32,39 @@ let server = http.createServer((req, res) => {
                    }
                );
                break;
-       }
+
+            case '/delete-account':
+                console.log('User profile');
+
+                dataProvider.deleteAccount(userId,
+                    (result) => {
+                        res.writeHead('200', result);
+                        res.end(result);
+                    },
+                    (err) => {
+                        console.error('Error:', err);
+                        res.writeHead(401, err);
+                        res.end();
+                    }
+                );
+                break;
+        }
     }
 
     if (req.method == 'POST') {
+
+        let _data = [];
 
         switch(path) {
             case '/auth':
                 console.log('Authenticate');
 
-                let _hash = [];
-
-                req.on('data', (chunk) => _hash.push(chunk));
+                req.on('data', (chunk) => _data.push(chunk));
 
                 req.on('end', () => {
-                    _hash = _hash.toString();
-                    console.log(_hash);
-                    dataProvider.authenticate(_hash,
+                    _data = _data.toString();
+                    console.log(_data);
+                    dataProvider.authenticate(_data,
                         (result) => {
                             res.writeHead(200, 'Access granted');
                             res.end(result);
@@ -64,8 +81,6 @@ let server = http.createServer((req, res) => {
             case '/register':
                 console.log('Register');
 
-                let _data = [];
-
                 req.on('data', (chunk) => _data.push(chunk));
 
                 req.on('end', () => {
@@ -74,6 +89,29 @@ let server = http.createServer((req, res) => {
                     dataProvider.register(_data,
                         (result) => {
                             res.writeHead(200, 'Account successfully created');
+                            res.end(result);
+                        },
+                        (err) => {
+                            console.error('Error:', err);
+                            res.writeHead(401, 'Access denied');
+                            res.end(err);
+                        }
+                    );
+                });
+                break;
+
+            case '/change-account-settings':
+                console.log('Change account settings');
+
+                req.on('data', (chunk) => _data.push(chunk));
+
+                req.on('end', () => {
+                    console.log(_data.toString());
+                    _data = JSON.parse(_data.toString());
+                    console.log('data', _data);
+                    dataProvider.changeAccountSettings(_data,
+                        (result) => {
+                            res.writeHead(200, 'Account details successfully changed');
                             res.end(result);
                         },
                         (err) => {

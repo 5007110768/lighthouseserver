@@ -27,7 +27,7 @@ DataProvider.createToken = function(callback) {
 
 };
 
-DataProvider.authenticate = function(hash, callback, err) {
+DataProvider.authenticate = function(hash, callback, error) {
     console.log('DataProvider.authenticate', hash);
 
     let query = 'SELECT ID, permissionLvl FROM user WHERE hash =' + database.escape(hash);
@@ -35,7 +35,10 @@ DataProvider.authenticate = function(hash, callback, err) {
     database.query('SELECT * FROM user', (err, result, fields) => { console.log(result); });
 
     database.query(query, (err, result, fields) => {
-        if (err) throw err;
+        if (err) {
+            console.log(err);
+            return error(err);
+        }
 
         DataProvider.createToken((token) => {
             console.log('Created token: ', token);
@@ -49,13 +52,16 @@ DataProvider.authenticate = function(hash, callback, err) {
     });
 };
 
-DataProvider.getProfile = function(userId, callback, err) {
+DataProvider.getProfile = function(userId, callback, error) {
     console.log('DataProvider.getProfile', userId);
     console.log('userId', userId);
     let query = 'SELECT * FROM user WHERE ID =' + database.escape(userId);
 
     database.query(query, (err, result, fields) => {
-        if (err) throw err;
+        if (err) {
+            console.log(err);
+            return error(err);
+        }
 
         result = JSON.stringify(result);
 
@@ -63,7 +69,7 @@ DataProvider.getProfile = function(userId, callback, err) {
     });
 };
 
-DataProvider.register = function(data, callback, err) {
+DataProvider.register = function(data, callback, error) {
     console.log('DataProvider.register', data.firstName + ' ' + data.lastName);
 
     let query = 'INSERT INTO user (firstName, lastName, email, gender, dateOfBirth, description, permissionLvl, hash) ' +
@@ -79,7 +85,10 @@ DataProvider.register = function(data, callback, err) {
         + ')';
 
     database.query(query, (err, result, fields) => {
-        if (err) throw err;
+        if (err)  {
+            console.log(err);
+            return error();
+        }
 
         DataProvider.createToken((token) => {
             console.log('Created token: ', token);
@@ -91,6 +100,44 @@ DataProvider.register = function(data, callback, err) {
         });
     });
 
+};
+
+DataProvider.changeAccountSettings = function(data, callback, error) {
+    console.log('DataProvider.changeAccountSettings');
+
+    let query = 'UPDATE user SET hash=' + database.escape(data.newHash) + ' WHERE hash =' + database.escape(data.hash);
+
+    // Validate existing hash before updating it to the new request
+    database.query('SELECT hash FROM user WHERE hash =' + database.escape(data.hash), (err, result) => {
+        let confirmedHash = result[0];
+        console.log('hash result:', confirmedHash);
+        if (!confirmedHash || confirmedHash.hash !== data.hash) return error('The current password you submitted is wrong');
+    });
+
+    // Update old email/pass hash with new one
+    database.query(query, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return error(err);
+        }
+
+        callback('Account settings were successfully changed');
+    });
+};
+
+DataProvider.deleteAccount = function(userId, callback, error) {
+    console.log('DataProvider.deleteAccount', userId);
+
+    let query = '';
+
+    database.query(query, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return error(err);
+        }
+
+        callback('Your account has been deleted');
+    });
 };
 
 module.exports = DataProvider;
