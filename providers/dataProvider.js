@@ -128,7 +128,7 @@ DataProvider.changeAccountSettings = function(data, callback, error) {
 DataProvider.deleteAccount = function(userId, callback, error) {
     console.log('DataProvider.deleteAccount', userId);
 
-    let query = '';
+    let query = 'DELETE FROM user WHERE ID =' + database.escape(userId);
 
     database.query(query, (err, result, fields) => {
         if (err) {
@@ -139,5 +139,42 @@ DataProvider.deleteAccount = function(userId, callback, error) {
         callback('Your account has been deleted');
     });
 };
+
+DataProvider.getChat = function(userId, partnerId, callback, error) {
+  console.log('DataProvider.getChat', 'userId: ' + userId + ', partnerId: ' + partnerId);
+
+  let query = 'SELECT * FROM message WHERE userID =' + database.escape(userId) + ' OR userID=' + database.escape(partnerId)
+      + 'AND participant= ' + database.escape(userId) + ' OR participant=' + database.escape(partnerId);
+
+  database.query(query, (err, result, fields) => {
+     if (err) {
+         console.log(err);
+         return error(err);
+     }
+
+     console.log('result: ', result);
+     callback(JSON.stringify(result));
+  });
+
+};
+
+DataProvider.sendMessage = function(data, callback, error) {
+    console.log('DataProvider.sendMessage', data);
+
+    let query = 'INSERT INTO message (userID, participant, message, creationDate) VALUES(' +
+        database.escape(data.userId) + ', ' +
+            database.escape(data.partnerId) + ', ' +
+            database.escape(data.text) + ', ' +
+            database.escape(data.creationDate) + ')';
+
+    database.query(query, (err, result, fields) => {
+        if (err) {
+            console.log(err);
+            return error(err);
+        }
+
+        callback('Message was successfully changed');
+    });
+}
 
 module.exports = DataProvider;

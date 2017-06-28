@@ -15,6 +15,7 @@ let server = http.createServer((req, res) => {
         console.log(path);
 
         let userId = params['userId'];
+        let partnerId = params['partnerId'];
 
         switch(path) {
            case '/user-profile':
@@ -37,6 +38,22 @@ let server = http.createServer((req, res) => {
                 console.log('User profile');
 
                 dataProvider.deleteAccount(userId,
+                    (result) => {
+                        res.writeHead('200', result);
+                        res.end(result);
+                    },
+                    (err) => {
+                        console.error('Error:', err);
+                        res.writeHead(401, err);
+                        res.end();
+                    }
+                );
+                break;
+
+            case '/chat':
+                console.log('Chat');
+
+                dataProvider.getChat(userId, partnerId,
                     (result) => {
                         res.writeHead('200', result);
                         res.end(result);
@@ -106,7 +123,6 @@ let server = http.createServer((req, res) => {
                 req.on('data', (chunk) => _data.push(chunk));
 
                 req.on('end', () => {
-                    console.log(_data.toString());
                     _data = JSON.parse(_data.toString());
                     console.log('data', _data);
                     dataProvider.changeAccountSettings(_data,
@@ -117,6 +133,28 @@ let server = http.createServer((req, res) => {
                         (err) => {
                             console.error('Error:', err);
                             res.writeHead(401, 'Access denied');
+                            res.end(err);
+                        }
+                    );
+                });
+                break;
+
+            case '/send-message':
+                console.log('Send message');
+
+                req.on('data', (chunk) => _data.push(chunk));
+
+                req.on('end', () => {
+                    _data = JSON.parse(_data.toString());
+                    console.log('data', _data);
+                    dataProvider.sendMessage(_data,
+                        (result) => {
+                            res.writeHead(200, 'Message was sent successfully changed');
+                            res.end(result);
+                        },
+                        (err) => {
+                            console.error('Error:', err);
+                            res.writeHead(401, 'Unable to send message');
                             res.end(err);
                         }
                     );
